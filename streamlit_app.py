@@ -6,7 +6,7 @@ import itertools
 # 1. 核心配置与样式
 # ==========================================
 
-st.set_page_config(page_title="Oi｜基拉祈祈愿 战队 BP 助手", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Oi｜基拉祈祈愿", page_icon="🛡️", layout="wide")
 
 # 颜色样式：根据 1-6 的数值上色
 # 1=大优(绿) -> 6=大劣(红)
@@ -130,7 +130,7 @@ def calculate_ban_pick(team_data, selected_opponents):
 # 4. 界面渲染
 # ==========================================
 
-st.title("🛡️ PTCG 战队 BP 助手 (Pro 4人版)")
+st.title("🛡️ Oi｜基拉祈祈愿 战队 BP 助手")
 st.caption("策略：推荐 4 名队友，防止对方 Ban 人导致阵容崩盘")
 
 # 侧边栏：对手卡组选择
