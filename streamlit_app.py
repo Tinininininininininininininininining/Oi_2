@@ -163,9 +163,11 @@ if not selected_opponents:
 else:
     # 表格
     st.subheader("📊 优劣势速览 (越绿越好)")
+    
+    # 创建表格数据 - 将队员和卡组分开
     table_data = []
     for member in DEFAULT_DATA:
-        row = {"队员": f"{member['player']} ({member['deck']})"}
+        row = {"队员": member['player'], "卡组": member['deck']}
         for idx, opp in enumerate(selected_opponents):
             col_name = f"{opp} (#{idx+1})"
             rating = member['matchups'].get(opp, member['matchups'].get("其它", 3))
@@ -173,8 +175,27 @@ else:
         table_data.append(row)
     
     df = pd.DataFrame(table_data)
-    df.set_index("队员", inplace=True)
-    st.dataframe(df.style.map(get_color_style), use_container_width=True)
+    
+    # 设置显示顺序：队员和卡组在前
+    column_order = ["队员", "卡组"] + [col for col in df.columns if col not in ["队员", "卡组"]]
+    df = df[column_order]
+    
+    # 应用样式，只对数字列应用颜色
+    def style_dataframe(df):
+        # 创建一个样式化的副本
+        styled_df = df.copy()
+        
+        # 获取数字列（排除队员和卡组列）
+        numeric_columns = [col for col in df.columns if col not in ["队员", "卡组"]]
+        
+        # 应用样式
+        for col in numeric_columns:
+            styled_df[col] = styled_df[col].apply(lambda x: f'<span style="{get_color_style(x)}">{x}</span>' if pd.notnull(x) else '')
+        
+        return styled_df
+    
+    styled_df = style_dataframe(df)
+    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
     st.markdown("---")
     st.subheader("🧠 AI 战术建议")
