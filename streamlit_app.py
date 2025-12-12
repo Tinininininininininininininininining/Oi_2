@@ -6,7 +6,7 @@ import itertools
 # 1. 核心配置与样式
 # ==========================================
 
-st.set_page_config(page_title="PTCG 战队 BP 助手 (Pro 4人版)", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Oi｜基拉祈祈愿 战队 BP 助手", page_icon="🛡️", layout="wide")
 
 # 颜色样式：根据 1-6 的数值上色
 # 1=大优(绿) -> 6=大劣(红)
