@@ -143,7 +143,7 @@ with st.sidebar:
     sorted_opponents = sorted([x for x in all_possible_opponents if x != "其它"])
     
     selected_opponents = []
-    default_values = ["沙奈朵", "鬼龙", "密勒顿", "赛富豪", "(无)", "(无)"]
+    default_values = ["沙奈朵", "鬼龙", "恶喷", "密勒顿", "(无)", "(无)"]
     
     for i in range(6):
         options = ["(无)"] + sorted_opponents
