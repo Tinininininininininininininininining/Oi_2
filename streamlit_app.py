@@ -149,14 +149,6 @@ with st.sidebar:
         if deck != "(无)":
             selected_opponents.append(deck)
             
-    st.markdown("---")
-    st.write(f"当前已选: {len(selected_opponents)} 套")
-    
-    st.markdown("---")
-    st.write("👥 当前队员数据：")
-    for member in DEFAULT_DATA:
-        st.caption(f"- {member['player']} ({member['deck']})")
-
 # 主区域
 if not selected_opponents:
     st.info("👈 请在左侧选择对手卡组")
