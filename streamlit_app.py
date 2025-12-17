@@ -163,21 +163,9 @@ def calculate_ban_pick(team_data, selected_opponents):
 st.title("🛡️ Oi｜基拉祈祈愿 战队 BP 助手")
 st.caption("策略：推荐 4 名队友，防止对方 Ban 人导致阵容崩盘")
 
-# 侧边栏：数据信息和对手卡组选择
+# 侧边栏：对手卡组选择
 with st.sidebar:
     st.header("⚙️ 对局设置")
-    
-    # 显示数据加载信息
-    st.subheader("📁 数据信息")
-    st.write(f"已加载 {len(DEFAULT_DATA)} 名队员数据")
-    st.write(f"包含 {len(DEFAULT_DATA[0]['matchups'])} 种对手卡组")
-    
-    # 显示队员列表
-    st.subheader("👥 当前队员")
-    for member in DEFAULT_DATA:
-        st.write(f"• {member['player']} ({member['deck']})")
-    
-    st.divider()
     
     # 提取所有对手卡组
     all_possible_opponents = set()
@@ -188,7 +176,6 @@ with st.sidebar:
     selected_opponents = []
     default_values = ["沙奈朵", "鬼龙", "恶喷", "密勒顿", "(无)", "(无)"]
     
-    st.subheader("🎯 选择对手卡组")
     for i in range(6):
         options = ["(无)"] + sorted_opponents
         def_index = 0
@@ -198,11 +185,6 @@ with st.sidebar:
         deck = st.selectbox(f"对手卡组 #{i+1}", options=options, index=def_index, key=f"deck_select_{i}")
         if deck != "(无)":
             selected_opponents.append(deck)
-    
-    # 添加重新加载数据按钮
-    if st.button("🔄 重新加载数据"):
-        st.cache_data.clear()
-        st.rerun()
             
 # 主区域
 if not selected_opponents:
