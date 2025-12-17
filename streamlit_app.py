@@ -20,20 +20,62 @@ def get_color_style(val):
     return "background-color: #ef4444; color: white; font-weight: bold" # 6: 深红 (不想打)
 
 # ==========================================
-# 2. 默认数据
+# 2. 从 CSV 文件加载数据
 # ==========================================
 
-DEFAULT_DATA = [
-    { "player": "皇子", "deck": "白洛", "matchups": { "恶喷": 4, "沙奈朵": 3, "鬼龙": 3, "密勒顿": 3, "轰鸣月": 3, "赛富豪": 1, "双窝梦幻": 2, "古剑豹": 3, "洛奇亚": 3, "卡比兽": 1, "连击熊": 1, "炎帝": 3, "汇流梦幻": 3, "宙斯": 2, "团结之翼": 3 } },
-    { "player": "奉先", "deck": "密勒顿", "matchups": { "恶喷": 4, "沙奈朵": 3, "鬼龙": 3, "密勒顿": 3, "轰鸣月": 4, "赛富豪": 4, "双窝梦幻": 5, "古剑豹": 2, "洛奇亚": 1, "卡比兽": 6, "连击熊": 5, "炎帝": 3, "汇流梦幻": 3, "宙斯": 3, "团结之翼": 1 } },
-    { "player": "xtime", "deck": "ltb恶喷", "matchups": { "恶喷": 2, "沙奈朵": 3, "鬼龙": 5, "密勒顿": 2, "轰鸣月": 3, "赛富豪": 3, "双窝梦幻": 2, "古剑豹": 3, "洛奇亚": 3, "卡比兽": 6, "连击熊": 5, "炎帝": 2, "汇流梦幻": 1, "宙斯": 2, "团结之翼": 2 } },
-    { "player": "小罗", "deck": "沙奈朵", "matchups": { "恶喷": 2, "沙奈朵": 3, "鬼龙": 2, "密勒顿": 4, "轰鸣月": 2, "赛富豪": 2, "双窝梦幻": 4, "古剑豹": 3, "洛奇亚": 2, "卡比兽": 6, "连击熊": 3, "炎帝": 6, "汇流梦幻": 3, "宙斯": 5, "团结之翼": 1 } },
-    { "player": "ciaos", "deck": "轰鸣月", "matchups": { "恶喷": 4, "沙奈朵": 4, "鬼龙": 3, "密勒顿": 2, "轰鸣月": 3, "赛富豪": 3, "双窝梦幻": 2, "古剑豹": 2, "洛奇亚": 2, "卡比兽": 3, "连击熊": 1, "炎帝": 3, "汇流梦幻": 2, "宙斯": 1, "团结之翼": 1 } },
-    { "player": "裤伽", "deck": "剑豹", "matchups": { "恶喷": 3, "沙奈朵": 3, "鬼龙": 3, "密勒顿": 2, "轰鸣月": 3, "赛富豪": 2, "双窝梦幻": 3, "古剑豹": 3, "洛奇亚": 3, "卡比兽": 3, "连击熊": 3, "炎帝": 4, "汇流梦幻": 3, "宙斯": 3, "团结之翼": 4 } }
-]
+def load_data_from_file(file_path="data.csv"):
+    """
+    从 CSV 文件加载数据并转换为 DEFAULT_DATA 格式
+    
+    参数:
+        file_path: CSV 文件路径，默认为 data.csv
+    
+    返回:
+        列表，每个元素是队员的数据字典
+    """
+    try:
+        # 读取 CSV 文件
+        df = pd.read_csv(file_path, encoding='utf-8')
+        
+        # 转换数据格式
+        default_data = []
+        
+        for _, row in df.iterrows():
+            # 提取队员基本信息
+            player_data = {
+                "player": row["队员昵称"],
+                "deck": row["使用卡组"],
+                "matchups": {}
+            }
+            
+            # 提取对阵评分数据（跳过前两列基本信息列）
+            for col in df.columns[2:]:
+                # 确保数值是整数
+                player_data["matchups"][col] = int(row[col])
+            
+            default_data.append(player_data)
+        
+        return default_data
+        
+    except FileNotFoundError:
+        st.error(f"❌ 数据文件 '{file_path}' 未找到")
+        st.info("请确保在同一目录下创建 data.csv 文件")
+        return None
+    except Exception as e:
+        st.error(f"❌ 读取数据文件时出错: {e}")
+        return None
+
+# 加载数据
+DEFAULT_DATA = load_data_from_file()
+
+# 如果数据加载失败，显示错误并停止运行
+if DEFAULT_DATA is None:
+    st.stop()
+
 # ==========================================
 # 3. 核心算法 (推荐 4 人)
 # ==========================================
+
 def calculate_ban_pick(team_data, selected_opponents):
     results = {}
     
@@ -67,7 +109,6 @@ def calculate_ban_pick(team_data, selected_opponents):
         return results
 
     all_members = [m['player'] for m in team_data]
-    # 修改：组合数改为 4
     combos_4 = list(itertools.combinations(all_members, 4))
     
     best_combo_4 = None
@@ -86,20 +127,17 @@ def calculate_ban_pick(team_data, selected_opponents):
             best_score_4 = current_combo_score
             best_combo_4 = combo
 
-    results['pick_combo'] = best_combo_4 # 这是一个 4 人元组
+    results['pick_combo'] = best_combo_4
     results['remaining_opponents'] = remaining_opponents
     
     # --- 3. 风险评估 (Worst Case) ---
-    # 在这 4 个人中，如果被 Ban 掉核心（对这 4 人中贡献最大的），剩下的 3 人表现如何？
     if best_combo_4:
-        worst_case_score = float('-inf') # 找最坏情况
+        worst_case_score = float('-inf')
         worst_case_banned = None
         
-        # 遍历这4个人，假设每人都可能被Ban
         for banned_player in best_combo_4:
             remaining_3 = [p for p in best_combo_4 if p != banned_player]
             
-            # 计算这剩下的3人总分
             score_3 = 0
             for player_name in remaining_3:
                 player_data = next(p for p in team_data if p['player'] == player_name)
@@ -107,7 +145,6 @@ def calculate_ban_pick(team_data, selected_opponents):
                     rating = player_data['matchups'].get(opp_deck, player_data['matchups'].get("其它", 3))
                     score_3 += rating
             
-            # 如果分数变高（变差），说明这个被Ban的人很重要
             if score_3 > worst_case_score:
                 worst_case_score = score_3
                 worst_case_banned = banned_player
@@ -126,11 +163,23 @@ def calculate_ban_pick(team_data, selected_opponents):
 st.title("🛡️ Oi｜基拉祈祈愿 战队 BP 助手")
 st.caption("策略：推荐 4 名队友，防止对方 Ban 人导致阵容崩盘")
 
-# 侧边栏：对手卡组选择
+# 侧边栏：数据信息和对手卡组选择
 with st.sidebar:
     st.header("⚙️ 对局设置")
     
-    # 提取所有对手
+    # 显示数据加载信息
+    st.subheader("📁 数据信息")
+    st.write(f"已加载 {len(DEFAULT_DATA)} 名队员数据")
+    st.write(f"包含 {len(DEFAULT_DATA[0]['matchups'])} 种对手卡组")
+    
+    # 显示队员列表
+    st.subheader("👥 当前队员")
+    for member in DEFAULT_DATA:
+        st.write(f"• {member['player']} ({member['deck']})")
+    
+    st.divider()
+    
+    # 提取所有对手卡组
     all_possible_opponents = set()
     for member in DEFAULT_DATA:
         all_possible_opponents.update(member['matchups'].keys())
@@ -139,6 +188,7 @@ with st.sidebar:
     selected_opponents = []
     default_values = ["沙奈朵", "鬼龙", "恶喷", "密勒顿", "(无)", "(无)"]
     
+    st.subheader("🎯 选择对手卡组")
     for i in range(6):
         options = ["(无)"] + sorted_opponents
         def_index = 0
@@ -148,6 +198,11 @@ with st.sidebar:
         deck = st.selectbox(f"对手卡组 #{i+1}", options=options, index=def_index, key=f"deck_select_{i}")
         if deck != "(无)":
             selected_opponents.append(deck)
+    
+    # 添加重新加载数据按钮
+    if st.button("🔄 重新加载数据"):
+        st.cache_data.clear()
+        st.rerun()
             
 # 主区域
 if not selected_opponents:
@@ -186,7 +241,6 @@ else:
     with col2:
         st.markdown("### 🟢 建议 4 人名单")
         if analysis.get('pick_combo'):
-            # 格式化输出 4 人名单
             combo = analysis['pick_combo']
             st.success("**" + " + ".join(combo) + "**")
             
