@@ -203,19 +203,7 @@ else:
     
     df = pd.DataFrame(table_data)
     df.set_index("队员", inplace=True)
-    
-    # 应用颜色样式和居中样式
-    styled_df = (
-        df.style
-        .map(get_color_style)  # 应用颜色样式
-        .set_properties(**{'text-align': 'center'})  # 设置所有单元格居中
-        .set_table_styles([
-            {'selector': 'th', 'props': [('text-align', 'center')]},  # 表头居中
-            {'selector': 'td', 'props': [('text-align', 'center')]},  # 数据单元格居中
-        ])
-    )
-    
-    st.dataframe(styled_df, use_container_width=True)
+    st.dataframe(df.style.map(get_color_style), use_container_width=True)
 
     st.markdown("---")
     st.subheader("🧠 AI 战术建议")
